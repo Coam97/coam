@@ -1,0 +1,74 @@
+---
+title: "TAREA DRPOSADA"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+# Taller
+
+1.  Escojan un articulo de su interes y concentrence en determinar o dislucidar como definieron las cohortes y como se disenno el estudio. Maximo una hoja
+
+    TITULO:Asociación entre la utilización de broncodilatadores de corta duración y el riesgo de hospitalización por asma en condiciones de práctica clínica habitual en una cohorte poblacional
+
+    ES un estudio descriptivo transversal multicentrico, objetivo demostrar causalidad, entre uso de agonista beta 2 accion corta (SABA) e incidencia de hospitalización asma, ya que se ha demostrado entre más uso SABA menos control de enfermedad.
+
+    Cohorte MAJORICA es la población que se encuentra ciudad de majorica con diagnostico de asma y EPOC mayores de 18 años, posiblemente susceptible a escoger. Se delimita con criterios inclusión en lapso tiempo retiro 2años, diagnostico CIE-9 493, retiro medicamento, excluyeron diagnostico EPOC.
+
+    Obtienen la información fuente secundaria es registro historia clínica y servicio electrónico farmacéutico.
+
+2.  Definir otra cohorte que incluya las tablas de person, condition_occurrence y procedure_occurrence. definirla en lenguaje natural y despues en codigo. Haga una caracterización de al menos una condición y un procedimiento.
+
+# Instalar paquetes
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("readr")
+install.packages("magrittr")
+```
+
+1.  SE INSTALA LA BASE DE DATOS ADJUNTA DE CARPETA UBICACIÓN, NECESARIAS PERSON, CONDITION_OCURRENT, PROCEDURE_OCCURENCE
+
+```{r}
+library(tidyverse)  
+person <- read_csv("C:/Users/arroy/Downloads/mimic-iv-demo-data-in-the-omop-common-data-model-0.9/mimic-iv-demo-data-in-the-omop-common-data-model-0.9/1_omop_data_csv/person.csv", show_col_types = FALSE)  
+
+condition_occurrence <- read_csv("C:/Users/arroy/Downloads/mimic-iv-demo-data-in-the-omop-common-data-model-0.9/mimic-iv-demo-data-in-the-omop-common-data-model-0.9/1_omop_data_csv/condition_occurrence.csv", show_col_types = FALSE)
+
+procedure_occurrence <- read_csv("C:/Users/arroy/Downloads/mimic-iv-demo-data-in-the-omop-common-data-model-0.9/mimic-iv-demo-data-in-the-omop-common-data-model-0.9/1_omop_data_csv/procedure_occurrence.csv")
+View(procedure_occurrence)
+```
+
+CREAR LA COHORTE CON LOS PARAMETROS RAZA BLANCA 2000001404 Y HOMBRE M, DE LAS TABLAS PERSON.
+
+```{r}
+cohort <- person %>% filter(race_source_concept_id== 2000001406) %>%
+                    filter(gender_source_value == "M") %>% 
+  select(person_id, race_source_concept_id, gender_source_value) ; cohort
+```
+
+Utilizar la tabla dos de procedimientos PROCEDURE_OCURRENCE
+
+Filtramos un valor particular en la tabla de procedure ocurrente uniendo las variables por person_id, y seleccionamos los filtros genero hombre y raza blanco, agregandolo a la variable procedimiento 32817. Lo que nos da resultado 45 muestras con estas variables.
+
+```{r}
+datos = cohort %>% inner_join(procedure_occurrence, join_by(person_id ==person_id)) %>% select(person_id, race_source_concept_id, gender_source_value, procedure_type_concept_id) %>%
+filter(procedure_type_concept_id==32817) ; datos
+```
+
+Filtramos un valor particular en la tabla de procedure ocurrente uniendo las variables por person_id, y seleccionamos los filtros genero y raza blanca, agregandolo a la variable procedimiento 32817. 
+
+```{r}
+datos1 = datos %>% inner_join(condition_occurrence, join_by(person_id ==person_id)) %>% select(person_id, race_source_concept_id, gender_source_value, procedure_type_concept_id, condition_concept_id) ; datos1
+```
+
+A lo anterior agregamos la condiccion de procedimiento condition_concept_id = 4145510; Esto nos genera ningún dato
+
+```{r}
+library(dplyr)
+datos= datos1 %>% filter(condition_concept_id == 4145510);
+datos
+```
+
