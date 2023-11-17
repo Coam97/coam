@@ -1,0 +1,468 @@
+---
+title: "Modelo de Regresión Logistica"
+author: "Bioestadística"
+format: html
+editor: visual
+---
+
+<div style="text-align: justify">
+
+### Situación
+
+Con el objeto de evaluar los factores asociados a diversos eventos cardiovasculares, un grupo de investigadores realizó la evaluación de factores de riesgo sociodemográficos de estilos de vida, antecedentes familiares, datos antropométricos y presencia de enfermedades (HTA, Diabetes).
+
+### Base de datos
+
+A partir de los datos suministrados por un grupo de investigación, que contienen información acerca de los estilos de vida, antecedentes familiares y datos antropométricos y presencia de enfermedades como Diabetes, entre otras; se encuentran 341 personas, con 31 variables.A continuación se presenta la base de datos, en donde se muestran todas las variables recopiladas en cada una de las 31 columnas y los primeras 15 sujetos sometidos al estudio de factores de riesgo sociodemográficos de estilos de vida.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+"Se instalan las librerias"
+library(readxl)
+library(pROC)
+library(dplyr)
+library(kableExtra)
+library(forcats)
+library(base)
+library(ggplot2)
+library(jtools)
+library(MASS)
+library(huxtable)
+library(broom)
+library(purrr)
+
+"Se carga la base de datos"
+library(readxl)
+Base <- read_excel("TAREA KEYLA/Final_Log.xlsx")
+View(Base)
+names(Base) #Nombre de las variables
+nrow(Base) #Números de las variables columnas datos
+Base=filter(Base,HTA>0)
+Base=filter(Base,HTA<3)
+
+" Se convierten las variables a tipo factor para poder graficarlas"
+
+Base$Sexo=as.factor(Base$Sexo)
+Base$HTA=as.factor(Base$HTA)
+Base$DIABETES=as.factor(Base$DIABETES)
+Base$Diabetes1=as.factor(Base$Diabetes1)
+Base$Fuma=as.factor(Base$Fuma)
+Base$Alcohol=as.factor(Base$Alcohol)
+Base$`Actividad Fisica`=as.factor(Base$`Actividad Fisica`)
+Base$ANTOBESIDAD=as.factor(Base$ANTOBESIDAD)
+Base$BioquimicAS=as.factor(Base$BioquimicAS)
+
+"Este comando omite y elimina los datos faltantes en la base de datos"
+na.omit(Base)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+"Este comando es para mostrar la base de datos un poco mas sofisticada"
+
+library(dplyr)
+kable(Base[1:17,],caption= "Tabla 1: Base de datos") %>%
+  kable_styling(full_width = F) %>%
+    column_spec(2, width = "20em")%>%
+  kable_styling(fixed_thead = F)%>%
+   scroll_box(width = "800px", height = "450px")
+
+```
+
+### 1. Exploración de variables
+
+En este trabajo, se busca relacionar la condición de tener HTA o no tener HTA con algunas covariables, tales como el hábito de fumar, realizar actividad física, consumo de alcohol, entre otras. Esto con el objetivo de evaluar el efecto que pueden tener estos factores sobre la probabilidad de ser HTA.
+
+En primer lugar, se observa la relación existente entre la presencia de HTA y la edad, teniendo en cuenta la base de datos del estudio. Para esto se agrupan las personas que presentan HTA y aquellas que no, para mostrar gráficamente la distribución entre hombres y mujeres.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+"Grafico de cajas y bigotes para el sexo y presencia de HTA"
+
+ggplot(Base, aes(x= Sexo,  group=HTA)) + 
+    geom_bar(aes(y = ..prop.., fill = factor(..x..)), stat="count",show.legend = F) +
+    geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5) +
+    labs(y = "Proporción %", fill="Sexo") +
+    facet_grid(~HTA) +
+    scale_y_continuous(labels = scales::percent)+
+  scale_x_discrete(labels = c("Hombres","Mujeres"))+
+  ggtitle("Gráfico 1: Proporción sexo según presencia de HTA")
+```
+
+Como se puede observar, entre las personas con HTA, las hombres representan la mayor proporción con un 51.22% del total de personas que presentan esta condición. Mientras que los mujeres representan el 48.78% del total de personas no HTA.Sin embargo, esta herramienta visual no permite definir si verdaderamente existe una relación significativa entre la edad y tener o no HTA, por lo que se realiza una prueba Chi, con el objetivo de evaluar la independencia entre estas variables. La prueba consta de las siguientes hipótesis:
+
+$$\begin{aligned}
+H_0&:\mbox{El sexo es independiente en la presencia de la HTA} vs \\
+H_1&:\mbox{El sexo es dependiente en la presencia de la HTA}
+\end{aligned}
+ $$
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+
+"Implementacion de la prueba CHI"
+
+t1.2 <- round(prop.table(table(Base$HTA, Base$Sexo))*100,2)
+addmargins(t1.2)
+
+"Prueba de Ji-cuadrado"
+Chi1=chisq.test(t1.2, correct = FALSE)
+Chi=summary(t1.2)
+Chi
+
+
+tchi=t(c(
+  variables=(Chi$n.vars), 
+  Estadistico=round(Chi$statistic,2),
+  gdl=round(Chi$parameter,0),
+  Pvalor=round(Chi$p.value,4)
+  ))
+
+```
+
+```{r echo=FALSE, warning=FALSE}
+"Tabla de prueba Chi"
+
+kable(tchi,col.names = c("Variables","Estadístico","gdl","P-valor")) %>%
+  kable_paper("hover", full_width = F,position="center") %>%
+  add_header_above(c("Tabla 2: Prueba chi para las variables HTA y sexo"=4 ))%>%
+  column_spec(2, width = "5em")%>%
+  kable_styling(fixed_thead = T)
+```
+
+A partir de los resultados de la prueba plasmados en la tabla anterior, se puede afirmar que con una confianza del $95\%$, la hipótesis nula se acepta ya que no existe diferencia significativa para sostener que la presencia de HTA es independiente del sexo de las personas. Por otra parte, otro factor con el que se podría relacionar la presencia de HTA, es con la edad, de manera similar que con el sexo, es posible evaluar si existe independencia entre ambas variables. Para este caso se compara una variable categórica nominal (dicotomica) que se traduce en tener o no HTA y la edad como continua. En este caso, se presenta el siguiente grafico de cajas y bigotes, para comparar cuartiles, entre ellos la mediana para la edad, teniendo en cuenta que los datos se agrupan en tener o no HTA.
+
+A simple vista, la diferencia entre los dos grupos respecto a la edad no parece ser muy grande; De las personas con HTA se encuentra que la persona con más edad, se encuentra entre los 40 años y 50.
+
+Sí tomamos el 25% de las personas sin HTA, son menores a 20 años, y la gran mayoría de las personass con HTA tiene menos de 40 años.
+
+En esta conclusión se pudo deducir que al comparar las edades para ambos grupos, se evidencia que para el grupo de personas con HTA las edades son mayores vs las personas sin dicha patología, y respecto a las medias se distancian por 4, sin embargo las desviaciones para ambos grupos (tabla 3), ambos parecen obtener resultados muy similares.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+"Gráfico de Caja y bigotes para la edad, de acuerdo a la presencia de HTA"
+
+bp <- ggplot(Base, aes(x =HTA, y = Edad, fill =HTA)) 
+bp + geom_boxplot(show.legend = F) + scale_fill_brewer(palette = "Blues")+
+  xlab(NULL)+
+  ylab("Edad")+
+  ggtitle("Gráfico 2: Caja y bigotes para la edad, de acuerdo a la presencia de HTA")
+
+```
+
+```{r echo=FALSE, warning=FALSE}
+
+"Tabla de medias y desviación "
+
+t2=group_by(Base, HTA) %>% 
+summarise(
+  count = n(), 
+  mean = round(mean(Edad, na.rm = TRUE),2),
+  sd = round(sd(Edad, na.rm = TRUE),2)
+  )
+
+kable(t2,col.names = c("Condición","Casos" ,"Media","Desviación estandar")) %>%
+  kable_paper("hover", full_width = F,position="center") %>%
+  add_header_above(c("Tabla 3: Relación presencia de HTA y edad"=4 ))%>%
+  column_spec(2, width = "10em")%>%
+  kable_styling(fixed_thead = T)
+```
+
+A pesar de que las medias son similares, se hace uso de una prueba t para la diferencia de medias en ambos grupos, de manera que se pueda establecer si existen o no diferencias significativas. Las hipótesis a contrastar son las siguientes:
+
+$$\begin{aligned}
+H_0&: \mbox{media de edad HTA = media de edad no HTA} vs\\
+H_1&: \mbox{media de edad HTA} \neq \mbox{media de edad no HTA}
+\end{aligned}$$
+
+Los resultados de la prueba se presentan en la siguiente tabla:
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+"Prueba t - student"
+
+pruebat=t.test(Base$Edad~Base$HTA,var.equal=TRUE)
+
+t3=t(c(
+  HTA=round(pruebat$estimate[1],2),
+  noHTA=round(pruebat$estimate[2],2),
+  Estadistico=round(pruebat$statistic,2), 
+  round(pruebat$parameter,0),
+  Limite=round(pruebat$conf.int[1:2],2),
+  Pvalor=round(pruebat$p.value,4)
+  ))
+
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+"Tabla de la prueba"
+
+kable(t3,col.names = c("Promedio grupo con HTA", "promedio grupo sin HTA", "Estadístico","gdl","Límite inf","Límite sup","P-valor")) %>%
+  kable_paper("hover", full_width = F,position="center") %>%
+  add_header_above(c("Tabla 4: Prueba t para la diferencia de medias entre las edades de HTA y no HTA"=7 ))%>%
+  column_spec(1:7, width = "5em")%>%
+  kable_styling(fixed_thead = T)
+```
+
+A partir de los resultados obtenidos y un pvalor mayor que el $5\%$, se puede afirmar que con una confianza del $95\%$, la hipótesis nula se acepta, por lo que hay evidencia estadística para sostener que no hay diferencia entre el promedio de las edades de los dos grupos.
+
+## Modelo de Regresión logístico inicial
+
+Como se mencionó al principio de este trabajo, se busca relacionar la probabilidad de tener HTA frente a ciertas covariables. Es por esto, que se realiza un un modelo de regresión logística entre la variable HTA y las siguientes variables independientes:
+
+-   Hábito de fumar (si/no)
+-   Consumo de alcohol (si/no)
+-   Realización de actividad física (sí/no)
+-   Antecedente familiar de obesidad (sí/no)
+-   Alteraciones en lípido y glicemia (sí/no)
+
+En este sentido, el modelo planteado sería el siguiente:
+
+$log\left [ p(HTA)) \right ]=ln\left [ \frac{P(Tener HTA)}{1-P(Tener HTA)}\right]=$-16.97 - 0.44Fuma+ 0.56 Alcohol + 16.123 *Act. Fisica* +2.22 *Antobesidad* + 0.71 *Bioquímicas*.
+
+Los resultados se resumen en la siguiente tabla:
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+#Modelo saturado
+
+mod1 <-glm(formula=HTA~Fuma+Alcohol+ `Actividad Fisica` + ANTOBESIDAD+BioquimicAS, family = binomial,data = Base)
+
+summ(mod1, model.info = FALSE, digits =2,)
+
+# calculo de r cuadrado
+R2.mod1 <- 1- (mod1$deviance/mod1$null.deviance)
+R2.mod1
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+
+# tabla de coeficientes de modelo saturado
+#En el siguiente modelo predictivo escogí el paciente número 2: el presenta en la variable fumar 2, alcohol 2 Activ fisica 1 Antb obesidad 2, Bioquimica 1
+ tcoemod1 <- data.frame("Coeficientes" = c(rep("Intercepto"),rep("Fuma"), 
+                                    rep("Alcohol"),
+                                    rep("Actividad física"),
+                                    rep("Antecedentes de Obesidad"),
+                                    rep("Bioquímicas")),
+                   "Est."= c(-16.974,-0.446,0.569,16.123,2.22,0.71),
+                   "P-valor"=c(0.98,0.21,0.053,0.0985,0.101,0.009))   
+                      kbl(tcoemod1, align = "c", caption ="Tabla 5.Resumen del Modelo con todas las covariables") %>%
+                     kable_paper(full_width = F) %>%
+                     column_spec(1, bold = T) %>%
+                     column_spec(2, width = "10em") %>% 
+                     column_spec(3, width = "10em") %>% 
+                   kable_styling(fixed_thead = T,full_width = F)%>%
+                     footnote("Variable predictora: Diabétes y un R^2: 0.0448")
+                      
+```
+
+El modelo saturado (con todas las covariables predictoras) revela que bajo una significancia al 5%, la presencia de las variables bioquimicas como alteraciones de los lipidos y glicemia, son las únicas covariables con efectos significativos sobre la probabilidad de tener HTA.
+
+Por otra parte se necesita saber la eficacia del modelo, conocida como la bondad de ajuste al momento de predecir si la probabilidad de tener HTA; para esto se utiliza, el valor de la Devianza nulla que es cuando el modelo va a predecir sin tener en cuenta los factores asociados como el hábito de fumar, consumir alchohol, antecedentes de obesidad, alteraciones en lípidos y glicemia por ultimo la actividad fisica; la Devianza residual que es cuando el modelo va a predecir teniendo en cuenta los factores asociados mencionados anteriormente y esta debe ser menor a la devianza nulla, indicando que el modelo predice con mayor presición. posteriormente se conoce el estadístico chi-cuadrado, que mide la diferencia entre los dos modelos y con este valor se calcula el p-valor indicando si el modelo es significativo \<0.05 para predecir la probabilidad de tener Diabetes.
+
+A continuación se muestra la información de la bondad de ajuste:
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+## BONDAD DE AJUSTE
+dev <- mod1$deviance
+nullDev <- mod1$null.deviance
+modelChi <- nullDev - dev
+modelChi
+
+chigl <- mod1$df.null - mod1$df.residual
+chisq.prob <- 1 - pchisq(modelChi, chigl)
+chisq.prob
+
+BAm1<-table(mod1$null.deviance,mod1$deviance, modelChi,chisq.prob)
+bamod1 <- c(374.990, 358.170, 16.820, 0.032)
+t<- t(bamod1)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kable(t,col.names = c("Devianza Nula","Devianza Residual","Chi-Cuadrado","P-valor")) %>%
+  kable_paper("hover", full_width = F,position="center") %>%
+  add_header_above(c("Tabla 6:Bondad de ajuste para calcular la precisión del modelo saturado al predecir la Diabétes"=4 ))%>%
+  column_spec(2:4, width = "5em")%>%
+  kable_styling(fixed_thead = T)
+```
+
+De la bondad de ajuste mostrada anteriormente, se puede notar que con un P-valor de 0.0320, siendo menor al 5% el modelo es significativo para predecir la prbabilidad de tener Diabetes. Luego de que se conoce que el modelo es significativo para predecir la probabilidad d ela diabétes se muestra el aporte de cada variable predictora utilizando el *(Test de wald)* para conocer su significancia a la hora de predecir el modelo saturado.
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#VIF TOLERANCIA A LA MATRIZ DE CORRELACION, SUPUESTO DE MULTICOLINEALIDAD
+library(car)
+vif(mod1)
+
+#TEST DE WALD
+library(aod)
+aportefuma=wald.test(b = coef(mod1), Sigma = vcov(mod1), Terms = 2)
+aportefuma
+aportalcohol=wald.test(b = coef(mod1), Sigma = vcov(mod1), Terms = 3)
+aportalcohol
+aportact.fisi=wald.test(b = coef(mod1), Sigma = vcov(mod1), Terms = 4-5)
+aptantob=wald.test(b = coef(mod1), Sigma = vcov(mod1), Terms = 6:8)
+aptantob
+aptanbioqui=wald.test(b = coef(mod1), Sigma = vcov(mod1), Terms = 9)
+aptanbioqui
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+Covariables<-c("Fumar","Alcohol","Actividad Fisica","Antecentes de Obesidad","Bioquímicas")
+Chi_Cuadrado=c(1.6,3.7,0.00046,40,6.28)
+gdf= c(1,1,1,3,1)
+P_Valor<-c(0.21,0.053,0.98,0.26,0.0089)
+VIF<-c(1.16,1.11,1.06,1.12,1.02)
+tablaportes=data.frame(Covariables,Chi_Cuadrado,P_Valor,VIF)
+tablaportes
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kbl(tablaportes, align = "c", caption ="Tabla 7. Test de Wald y VIF para el Modelo Saturado") %>%
+                     kable_paper(full_width = F) %>%
+                     column_spec(1, bold = T) %>%
+                     column_spec(2, width = "10em") %>% 
+                     column_spec(3, width = "10em") %>% 
+                   kable_styling(fixed_thead = T,full_width = F)%>%
+                     footnote("VIF:Toleracia en las matrices de Correlación")
+```
+
+De la anterior información acerca del análisis VIF: toleracia en las matrices de correlación, como ninguna de las covariables son mayores a 10, se dice que ninguna es dependiente de la otra por ejemplo: el hábito de fumar no depende ni del consumo del alcohol,ni de realizar actividad fisica, ni tene rantecedentes de obesidad ni alteraciones en los lípidos y glicemia de igual manera las demas covariables, esto quiere decir que los datos observaos en los pacientes estadisticamente son simétricos, o no sesgados por lo tanto no se necesita omitir variable. Respecto la prueba de Test de Wald la cual mostró la significancia o el aporte de cada covariable del modelo saturado; Con esta prueba se corroboró el resultado del modelo en donde la unica covariable que unfluye en la predicción de la diabetes es la Alteración en lípidos y glicemia (Bioquímicas)con P-valor de 0,0089.
+
+Sabiendo que la variable que aporta significativamente al modelo Inicial son alteraciones en lípidos y glicemia. se calculan los odds ratio (OR) para expresar si la probabilidad de ocurrencia de algunos factores (covariables) inciden en la presencia/ausencia de la diabetes. Los Odds se expresan de la siguiente manera:
+
+$$Odds=\frac{P(Tener HTA)}{1-P(Tener HTA)}=e^{logit}$$
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+exp(cbind(OR = coef(mod1), confint(mod1)));
+```
+
+Al momento de predecir la ocurrencia de la diabétes como ya sabemos que las alteraciones bioquímicas inciden mucho en la predicción, le calculamos el OR para conocer de que manera su ocurrencia influye, $exp(0,71)=$ 2,03, como 2,03 mayor que 1 se dice que al aumentar las alteraciones en lípidos y glicemia, la probabilidad de tener diabetes tambien aumenta, esta afirmación se sustenta en el intervalo de confianza que esta dado por **IC:(1.206-3.521)** al no contener al 1.
+
+## Modelo de Regresión logístico Final.
+
+A partir del criterio Akaike (AIC), el cual se conoce como una una medida de la calidad relativa de un modelo que explica el ajuste y el número de términos por esto se realiza un modelo final el cual esta dado por la siguiente ecuación:
+
+$$log\left [ p(Diabetes)) \right ]=ln\left [ \frac{P(Tener Diabétes)}{1-P(Tener Diabétes)}\right]=0.659 + 0.400 Alcohol + 0.702 Bioquimicas$$
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+# Una forma de seleccionar un modelo (AIC)
+
+mod.final <- stepAIC(mod1, 
+                        scope = list(upper = mod1), 
+                        direction = "both")
+summ(mod.final, model.info = FALSE, digits = 3)
+
+# calculo de r cuadrado
+R2.modf <- (mod.final$null.deviance-mod.final$deviance)/mod.final$null.deviance
+R2.modf
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Resumen del modelo final
+ tcoemodf <- data.frame("Resumen" = c(rep("Intercepto"), 
+                                    rep("Alcohol"),
+                                    rep("Bioquímicas")),
+                   "Coeficientes"= c(0.659,0.400,0.702),
+                   "P-valor"=c(0.00, 0.144,0.009))   
+                      kbl(tcoemodf, align = "c", caption ="Tabla 8 .Resumen del Modelo Final") %>%
+                     kable_paper(full_width = F) %>%
+                     column_spec(1, bold = T) %>%
+                     column_spec(2, width = "10em") %>% 
+                     column_spec(3, width = "10em") %>% 
+                   kable_styling(fixed_thead = T,full_width = F)%>%
+                     footnote("Variable predictora: Diabétes y un R^2:0,024")
+```
+
+A partir del modelo final, las variables que explican de manera significativa la probabilidad de tener diabetes son en primer lugar, la presencia de alteraciones em lípido y glicemia y el consumo de alcohol.
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#BONDAD DE AJUSTE
+dev1 <- mod.final$deviance
+nullDev1 <- mod.final$null.deviance
+modelChi1 <- nullDev1 - dev1
+modelChi1
+
+chigl1 <- mod.final$df.null - mod.final$df.residual
+chisq.prob1 <- 1 - pchisq(modelChi1, chigl1)
+chisq.prob1
+
+valtab<-table(mod.final$null.deviance,mod.final$deviance, modelChi1,chisq.prob1)
+valtab
+vectBA <- c(374.987, 366.11, 8.87, 0.01184)
+tmf<- t(vectBA)
+tmf
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kable( tmf ,col.names = c("Devianza Nula","Devianza Residual","Chi-Cuadrado","P-valor")) %>%
+  kable_paper("hover", full_width = F,position="center") %>%
+  add_header_above(c("Tabla 9:Bondad de ajuste para calcular la precisión del modelo Final al predecir la Diabétes"=4 ))%>%
+  column_spec(2:4, width = "5em")%>%
+  kable_styling(fixed_thead = T)
+```
+
+La bondad de ajuste para el modelo final revela con un P-valor de 0.0118, que el modelo es significativo para predecir la probabilidad de tener Diabetes.Luego de que se sabe que el modelo es significativo para predecir es importante calcular el aporte de cada variable predictora *(Test de waldS)*para conocer su significancia a la hora de predecir el modelo.
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#TEST DE WALD, APORTE DE CADA VARIABLE
+library(aod)
+
+aportalcohol2=wald.test(b = coef(mod.final), Sigma = vcov(mod.final), Terms=2)
+aportalcohol2
+aptanbioqui2=wald.test(b = coef(mod.final), Sigma = vcov(mod.final), Terms = 3)
+aptanbioqui2
+# VIF, SUPUESTO DE MILTICOLINEALIDAD
+library(car)
+vif(mod.final)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#DEVIANCE D EAMBOS MODELOS
+
+Variables.<-c("Alcohol","Bioquimicas")
+Chi_Cuadrado.<-c(2.1,6.9)
+gdf.= c(1,1)
+P_Valor.<-c(0.14,0.0088)
+VIF.<-c(1.00,1.00)
+tablaportes2=data.frame(Variables.,Chi_Cuadrado.,P_Valor.,VIF.)
+tablaportes2
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kbl(tablaportes2, align = "c", caption ="Tabla 10. Test de Walds y VIF para el Modelo Final") %>%
+                     kable_paper(full_width = F) %>%
+                     column_spec(1, bold = T) %>%
+                     column_spec(2, width = "10em") %>% 
+                     column_spec(3, width = "10em") %>% 
+                   kable_styling(fixed_thead = T,full_width = F)%>%
+                     footnote("VIF: Tolerancia en las matrices de correlación")
+```
+
+Como se puede notar en la tabla anterior, el supuesto de multicolinealidad no se viola, conociendo el resultado de los VIF, menores a 10 indican que ni el consumo de alcohol depende las alteraciones en lipidos y glicemia y viceversa, siendo asi se dice que el modelo no esta sesgado. Por otro lado acerca de la prueba de Test de Wald la cual mostró la significancia o el aporte de cada covariable del modelo final; Con esta prueba se corroboró el resultado del primer modelo en donde la covariables que influye en la predicción de la diabetes es la alteración en lípidos y glicemia con P-valor de 0,0088; Sabiendo que la variable que aporta significativamente al modelo final son alteraciones en lípidos y glicemia. Por medio de los Odds, el indicador para predecir la probabilidad de tener diabétes teniendo en cuenta el coeficiente de la variable predictora (Bioquimicas) como 2,016 es mayor que 1 se dice que al aumentar en una unidad las alteraciones en lípidos y glicemia, la probabilidad de tener diabetes se duplica frente a la probabilidad de no tener diabétes, esto se corrobora en el intervalo de confianza de la covariable Bioquimicas ya que no incluye al uno dentro de su intervalo, tal como lo muestra la tabla 11.
+
+```{r include=FALSE}
+# CALCULO DE OR E INTERVALOS DE CONFIANZA
+exp(cbind(OR = coef(mod.final ), confint(mod.final)))
+
+Betas. <- c("Intercepto","Alcohol","Bioquimicas")
+OR<-c(1.932,1.491,2.016)
+IC.Inferior <- c(0.296,-0.127,0.185)
+IC.Superior <- c(1.032,0.946, 1.237)
+
+tabla_ic <-data.frame(Betas.,OR,IC.Inferior,IC.Superior)
+
+
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+kbl(tabla_ic, align = "c", caption ="Tabla 11. Resultados de OR e Intervalos de confianza AL 95% del Modelo Final") %>%
+                     kable_paper(full_width = F) %>%
+                     column_spec(1, bold = T) %>%
+                     column_spec(2, width = "10em") %>% 
+                     column_spec(3, width = "10em") %>% 
+                   kable_styling(fixed_thead = T,full_width = F)%>%
+                     footnote("Variable predictora: Diabétes")
+```

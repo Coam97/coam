@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Bioestadística">
+
+<title>Modelo de Regresión Logistica</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="TRABAJO_files/libs/clipboard/clipboard.min.js"></script>
+<script src="TRABAJO_files/libs/quarto-html/quarto.js"></script>
+<script src="TRABAJO_files/libs/quarto-html/popper.min.js"></script>
+<script src="TRABAJO_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="TRABAJO_files/libs/quarto-html/anchor.min.js"></script>
+<link href="TRABAJO_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="TRABAJO_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="TRABAJO_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="TRABAJO_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="TRABAJO_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+<script src="TRABAJO_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="TRABAJO_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Modelo de Regresión Logistica</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Bioestadística </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div style="text-align: justify">
+
+<section id="situación" class="level3">
+<h3 class="anchored" data-anchor-id="situación">Situación</h3>
+<p>Con el objeto de evaluar los factores asociados a diversos eventos cardiovasculares, un grupo de investigadores realizó la evaluación de factores de riesgo sociodemográficos de estilos de vida, antecedentes familiares, datos antropométricos y presencia de enfermedades (HTA, Diabetes).</p>
+</section>
+<section id="base-de-datos" class="level3">
+<h3 class="anchored" data-anchor-id="base-de-datos">Base de datos</h3>
+<p>A partir de los datos suministrados por un grupo de investigación, que contienen información acerca de los estilos de vida, antecedentes familiares y datos antropométricos y presencia de enfermedades como Diabetes, entre otras; se encuentran 341 personas, con 31 variables.A continuación se presenta la base de datos, en donde se muestran todas las variables recopiladas en cada una de las 31 columnas y los primeras 15 sujetos sometidos al estudio de factores de riesgo sociodemográficos de estilos de vida.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Este comando es para mostrar la base de datos un poco mas sofisticada"</code></pre>
+</div>
+<div class="cell-output-display">
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:450px; overflow-x: scroll; width:800px; ">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Tabla 1: Base de datos</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Numero paciente</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Sexo</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Edad</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Estadocivil</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Estudios</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Trabajo</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Fuma</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Frecuencia Fuma</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Actividad Fisica</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Frec.ActFisica</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">ACV</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">DIABETES</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">ANTOBESIDAD</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">ObesAutor</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Cintura</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Peso</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Talla</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">IMC</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Nutricional</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">OBS_IMC</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">PAS</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">PAD</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">HTA</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Diabetes</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">TTODIABETES</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Alcohol</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">EDADINICIO</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">FRECUENCIA</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">BioquimicAS</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">estadodesalud</th>
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Diabetes1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">54.6</td>
+<td style="text-align: right;">1.68</td>
+<td style="text-align: right;">19.34524</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">117</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">72.5</td>
+<td style="text-align: right;">1.75</td>
+<td style="text-align: right;">23.67347</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">70.8</td>
+<td style="text-align: right;">1.63</td>
+<td style="text-align: right;">26.64760</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">85.0</td>
+<td style="text-align: right;">1.70</td>
+<td style="text-align: right;">29.41176</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">153</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">81.0</td>
+<td style="text-align: right;">1.70</td>
+<td style="text-align: right;">28.02768</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">48</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">70.4</td>
+<td style="text-align: right;">1.65</td>
+<td style="text-align: right;">25.85859</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Con Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">53.9</td>
+<td style="text-align: right;">1.55</td>
+<td style="text-align: right;">22.43496</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">134</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">102</td>
+<td style="text-align: right;">81.9</td>
+<td style="text-align: right;">1.61</td>
+<td style="text-align: right;">31.59600</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">127</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">61.0</td>
+<td style="text-align: right;">1.62</td>
+<td style="text-align: right;">23.24341</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">118</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Con Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">59.1</td>
+<td style="text-align: right;">1.68</td>
+<td style="text-align: right;">20.93963</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">116</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Con Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">11</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">68.6</td>
+<td style="text-align: right;">1.66</td>
+<td style="text-align: right;">24.89476</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">124</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Con Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">49.0</td>
+<td style="text-align: right;">1.54</td>
+<td style="text-align: right;">20.66116</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Con Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">70.6</td>
+<td style="text-align: right;">1.57</td>
+<td style="text-align: right;">28.64214</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">122</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">14</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">52.6</td>
+<td style="text-align: right;">1.61</td>
+<td style="text-align: right;">20.29243</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">104</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">88.1</td>
+<td style="text-align: right;">1.77</td>
+<td style="text-align: right;">28.12091</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">129</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td style="text-align: left; width: 20em;">2</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">60.0</td>
+<td style="text-align: right;">1.60</td>
+<td style="text-align: right;">23.43750</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">147</td>
+<td style="text-align: right;">98</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Con Diabetes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td style="text-align: left; width: 20em;">1</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">66.0</td>
+<td style="text-align: right;">1.60</td>
+<td style="text-align: right;">25.78125</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">180</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Sin Diabetes</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+</section>
+<section id="exploración-de-variables" class="level3">
+<h3 class="anchored" data-anchor-id="exploración-de-variables">1. Exploración de variables</h3>
+<p>En este trabajo, se busca relacionar la condición de tener HTA o no tener HTA con algunas covariables, tales como el hábito de fumar, realizar actividad física, consumo de alcohol, entre otras. Esto con el objetivo de evaluar el efecto que pueden tener estos factores sobre la probabilidad de ser HTA.</p>
+<p>En primer lugar, se observa la relación existente entre la presencia de HTA y la edad, teniendo en cuenta la base de datos del estudio. Para esto se agrupan las personas que presentan HTA y aquellas que no, para mostrar gráficamente la distribución entre hombres y mujeres.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Grafico de cajas y bigotes para el sexo y presencia de HTA"</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="TRABAJO_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Como se puede observar, entre las personas con HTA, las hombres representan la mayor proporción con un 51.22% del total de personas que presentan esta condición. Mientras que los mujeres representan el 48.78% del total de personas no HTA.Sin embargo, esta herramienta visual no permite definir si verdaderamente existe una relación significativa entre la edad y tener o no HTA, por lo que se realiza una prueba Chi, con el objetivo de evaluar la independencia entre estas variables. La prueba consta de las siguientes hipótesis:</p>
+<p><span class="math display">\[\begin{aligned}
+H_0&amp;:\mbox{El sexo es independiente en la presencia de la HTA} vs \\
+H_1&amp;:\mbox{El sexo es dependiente en la presencia de la HTA}
+\end{aligned}
+\]</span></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Tabla de prueba Chi"</code></pre>
+</div>
+<div class="cell-output-display">
+<table class="lightable-paper lightable-hover table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="4" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px; position: sticky; top: 0; background-color: #FFFFFF;"><div style="TRUE">
+Tabla 2: Prueba chi para las variables HTA y sexo
+</div></th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Variables</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Estadístico</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">gdl</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">P-valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right; width: 5em;">0.03</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.8518</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>A partir de los resultados de la prueba plasmados en la tabla anterior, se puede afirmar que con una confianza del <span class="math inline">\(95\%\)</span>, la hipótesis nula se acepta ya que no existe diferencia significativa para sostener que la presencia de HTA es independiente del sexo de las personas. Por otra parte, otro factor con el que se podría relacionar la presencia de HTA, es con la edad, de manera similar que con el sexo, es posible evaluar si existe independencia entre ambas variables. Para este caso se compara una variable categórica nominal (dicotomica) que se traduce en tener o no HTA y la edad como continua. En este caso, se presenta el siguiente grafico de cajas y bigotes, para comparar cuartiles, entre ellos la mediana para la edad, teniendo en cuenta que los datos se agrupan en tener o no HTA.</p>
+<p>A simple vista, la diferencia entre los dos grupos respecto a la edad no parece ser muy grande; De las personas con HTA se encuentra que la persona con más edad, se encuentra entre los 40 años y 50.</p>
+<p>Sí tomamos el 25% de las personas sin HTA, son menores a 20 años, y la gran mayoría de las personass con HTA tiene menos de 40 años.</p>
+<p>En esta conclusión se pudo deducir que al comparar las edades para ambos grupos, se evidencia que para el grupo de personas con HTA las edades son mayores vs las personas sin dicha patología, y respecto a las medias se distancian por 4, sin embargo las desviaciones para ambos grupos (tabla 3), ambos parecen obtener resultados muy similares.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Gráfico de Caja y bigotes para la edad, de acuerdo a la presencia de HTA"</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="TRABAJO_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Tabla de medias y desviación "</code></pre>
+</div>
+<div class="cell-output-display">
+<table class="lightable-paper lightable-hover table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="4" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px; position: sticky; top: 0; background-color: #FFFFFF;"><div style="TRUE">
+Tabla 3: Relación presencia de HTA y edad
+</div></th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th" style="text-align: left; position: sticky; top: 0; background-color: #FFFFFF;">Condición</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Casos</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Media</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Desviación estandar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1</td>
+<td style="text-align: right; width: 10em;">41</td>
+<td style="text-align: right;">36.76</td>
+<td style="text-align: right;">14.04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2</td>
+<td style="text-align: right; width: 10em;">300</td>
+<td style="text-align: right;">31.90</td>
+<td style="text-align: right;">15.02</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>A pesar de que las medias son similares, se hace uso de una prueba t para la diferencia de medias en ambos grupos, de manera que se pueda establecer si existen o no diferencias significativas. Las hipótesis a contrastar son las siguientes:</p>
+<p><span class="math display">\[\begin{aligned}
+H_0&amp;: \mbox{media de edad HTA = media de edad no HTA} vs\\
+H_1&amp;: \mbox{media de edad HTA} \neq \mbox{media de edad no HTA}
+\end{aligned}\]</span></p>
+<p>Los resultados de la prueba se presentan en la siguiente tabla:</p>
+<div class="cell" data-paged.print="false">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Tabla de la prueba"</code></pre>
+</div>
+<div class="cell-output-display">
+<table class="lightable-paper lightable-hover table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="7" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px; position: sticky; top: 0; background-color: #FFFFFF;"><div style="TRUE">
+Tabla 4: Prueba t para la diferencia de medias entre las edades de HTA y no HTA
+</div></th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Promedio grupo con HTA</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">promedio grupo sin HTA</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Estadístico</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">gdl</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Límite inf</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Límite sup</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">P-valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right; width: 5em;">36.76</td>
+<td style="text-align: right; width: 5em;">31.9</td>
+<td style="text-align: right; width: 5em;">1.96</td>
+<td style="text-align: right; width: 5em;">339</td>
+<td style="text-align: right; width: 5em;">-0.03</td>
+<td style="text-align: right; width: 5em;">9.74</td>
+<td style="text-align: right; width: 5em;">0.0513</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>A partir de los resultados obtenidos y un pvalor mayor que el <span class="math inline">\(5\%\)</span>, se puede afirmar que con una confianza del <span class="math inline">\(95\%\)</span>, la hipótesis nula se acepta, por lo que hay evidencia estadística para sostener que no hay diferencia entre el promedio de las edades de los dos grupos.</p>
+</section>
+<section id="modelo-de-regresión-logístico-inicial" class="level2">
+<h2 class="anchored" data-anchor-id="modelo-de-regresión-logístico-inicial">Modelo de Regresión logístico inicial</h2>
+<p>Como se mencionó al principio de este trabajo, se busca relacionar la probabilidad de tener HTA frente a ciertas covariables. Es por esto, que se realiza un un modelo de regresión logística entre la variable HTA y las siguientes variables independientes:</p>
+<ul>
+<li>Hábito de fumar (si/no)</li>
+<li>Consumo de alcohol (si/no)</li>
+<li>Realización de actividad física (sí/no)</li>
+<li>Antecedente familiar de obesidad (sí/no)</li>
+<li>Alteraciones en lípido y glicemia (sí/no)</li>
+</ul>
+<p>En este sentido, el modelo planteado sería el siguiente:</p>
+<p><span class="math inline">\(log\left [ p(HTA)) \right ]=ln\left [ \frac{P(Tener HTA)}{1-P(Tener HTA)}\right]=\)</span>-16.97 - 0.44Fuma+ 0.56 Alcohol + 16.123 <em>Act. Fisica</em> +2.22 <em>Antobesidad</em> + 0.71 <em>Bioquímicas</em>.</p>
+<p>Los resultados se resumen en la siguiente tabla:</p>
+<div class="cell" data-paged.print="false">
+<div class="cell-output-display">
+<table class="lightable-paper table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Tabla 5.Resumen del Modelo con todas las covariables</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Coeficientes</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Est.</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">P.valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Intercepto</td>
+<td style="text-align: center; width: 10em;">-16.974</td>
+<td style="text-align: center; width: 10em;">0.9800</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Fuma</td>
+<td style="text-align: center; width: 10em;">-0.446</td>
+<td style="text-align: center; width: 10em;">0.2100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Alcohol</td>
+<td style="text-align: center; width: 10em;">0.569</td>
+<td style="text-align: center; width: 10em;">0.0530</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Actividad física</td>
+<td style="text-align: center; width: 10em;">16.123</td>
+<td style="text-align: center; width: 10em;">0.0985</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Antecedentes de Obesidad</td>
+<td style="text-align: center; width: 10em;">2.220</td>
+<td style="text-align: center; width: 10em;">0.1010</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Bioquímicas</td>
+<td style="text-align: center; width: 10em;">0.710</td>
+<td style="text-align: center; width: 10em;">0.0090</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td style="text-align: center; padding: 0;"><span style="font-style: italic;">Note: </span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center; padding: 0;"><sup></sup> Variable predictora: Diabétes y un R^2: 0.0448</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
+</table>
+
+
+</div>
+</div>
+<p>El modelo saturado (con todas las covariables predictoras) revela que bajo una significancia al 5%, la presencia de las variables bioquimicas como alteraciones de los lipidos y glicemia, son las únicas covariables con efectos significativos sobre la probabilidad de tener HTA.</p>
+<p>Por otra parte se necesita saber la eficacia del modelo, conocida como la bondad de ajuste al momento de predecir si la probabilidad de tener HTA; para esto se utiliza, el valor de la Devianza nulla que es cuando el modelo va a predecir sin tener en cuenta los factores asociados como el hábito de fumar, consumir alchohol, antecedentes de obesidad, alteraciones en lípidos y glicemia por ultimo la actividad fisica; la Devianza residual que es cuando el modelo va a predecir teniendo en cuenta los factores asociados mencionados anteriormente y esta debe ser menor a la devianza nulla, indicando que el modelo predice con mayor presición. posteriormente se conoce el estadístico chi-cuadrado, que mide la diferencia entre los dos modelos y con este valor se calcula el p-valor indicando si el modelo es significativo &lt;0.05 para predecir la probabilidad de tener Diabetes.</p>
+<p>A continuación se muestra la información de la bondad de ajuste:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-paper lightable-hover table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="4" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px; position: sticky; top: 0; background-color: #FFFFFF;"><div style="TRUE">
+Tabla 6:Bondad de ajuste para calcular la precisión del modelo saturado al predecir la Diabétes
+</div></th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Devianza Nula</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Devianza Residual</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Chi-Cuadrado</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">P-valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">374.99</td>
+<td style="text-align: right; width: 5em;">358.17</td>
+<td style="text-align: right; width: 5em;">16.82</td>
+<td style="text-align: right; width: 5em;">0.032</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>De la bondad de ajuste mostrada anteriormente, se puede notar que con un P-valor de 0.0320, siendo menor al 5% el modelo es significativo para predecir la prbabilidad de tener Diabetes. Luego de que se conoce que el modelo es significativo para predecir la probabilidad d ela diabétes se muestra el aporte de cada variable predictora utilizando el <em>(Test de wald)</em> para conocer su significancia a la hora de predecir el modelo saturado.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-paper table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Tabla 7. Test de Wald y VIF para el Modelo Saturado</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Covariables</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Chi_Cuadrado</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">P_Valor</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">VIF</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Fumar</td>
+<td style="text-align: center; width: 10em;">1.60000</td>
+<td style="text-align: center; width: 10em;">0.2100</td>
+<td style="text-align: center;">1.16</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Alcohol</td>
+<td style="text-align: center; width: 10em;">3.70000</td>
+<td style="text-align: center; width: 10em;">0.0530</td>
+<td style="text-align: center;">1.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Actividad Fisica</td>
+<td style="text-align: center; width: 10em;">0.00046</td>
+<td style="text-align: center; width: 10em;">0.9800</td>
+<td style="text-align: center;">1.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Antecentes de Obesidad</td>
+<td style="text-align: center; width: 10em;">40.00000</td>
+<td style="text-align: center; width: 10em;">0.2600</td>
+<td style="text-align: center;">1.12</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Bioquímicas</td>
+<td style="text-align: center; width: 10em;">6.28000</td>
+<td style="text-align: center; width: 10em;">0.0089</td>
+<td style="text-align: center;">1.02</td>
+</tr>
+</tbody><tfoot>
+<tr class="even">
+<td style="text-align: center; padding: 0;"><span style="font-style: italic;">Note: </span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; padding: 0;"><sup></sup> VIF:Toleracia en las matrices de Correlación</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
+</table>
+
+
+</div>
+</div>
+<p>De la anterior información acerca del análisis VIF: toleracia en las matrices de correlación, como ninguna de las covariables son mayores a 10, se dice que ninguna es dependiente de la otra por ejemplo: el hábito de fumar no depende ni del consumo del alcohol,ni de realizar actividad fisica, ni tene rantecedentes de obesidad ni alteraciones en los lípidos y glicemia de igual manera las demas covariables, esto quiere decir que los datos observaos en los pacientes estadisticamente son simétricos, o no sesgados por lo tanto no se necesita omitir variable. Respecto la prueba de Test de Wald la cual mostró la significancia o el aporte de cada covariable del modelo saturado; Con esta prueba se corroboró el resultado del modelo en donde la unica covariable que unfluye en la predicción de la diabetes es la Alteración en lípidos y glicemia (Bioquímicas)con P-valor de 0,0089.</p>
+<p>Sabiendo que la variable que aporta significativamente al modelo Inicial son alteraciones en lípidos y glicemia. se calculan los odds ratio (OR) para expresar si la probabilidad de ocurrencia de algunos factores (covariables) inciden en la presencia/ausencia de la diabetes. Los Odds se expresan de la siguiente manera:</p>
+<p><span class="math display">\[Odds=\frac{P(Tener HTA)}{1-P(Tener HTA)}=e^{logit}\]</span></p>
+<p>Al momento de predecir la ocurrencia de la diabétes como ya sabemos que las alteraciones bioquímicas inciden mucho en la predicción, le calculamos el OR para conocer de que manera su ocurrencia influye, <span class="math inline">\(exp(0,71)=\)</span> 2,03, como 2,03 mayor que 1 se dice que al aumentar las alteraciones en lípidos y glicemia, la probabilidad de tener diabetes tambien aumenta, esta afirmación se sustenta en el intervalo de confianza que esta dado por <strong>IC:(1.206-3.521)</strong> al no contener al 1.</p>
+</section>
+<section id="modelo-de-regresión-logístico-final." class="level2">
+<h2 class="anchored" data-anchor-id="modelo-de-regresión-logístico-final.">Modelo de Regresión logístico Final.</h2>
+<p>A partir del criterio Akaike (AIC), el cual se conoce como una una medida de la calidad relativa de un modelo que explica el ajuste y el número de términos por esto se realiza un modelo final el cual esta dado por la siguiente ecuación:</p>
+<p><span class="math display">\[log\left [ p(Diabetes)) \right ]=ln\left [ \frac{P(Tener Diabétes)}{1-P(Tener Diabétes)}\right]=0.659 + 0.400 Alcohol + 0.702 Bioquimicas\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-paper table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Tabla 8 .Resumen del Modelo Final</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Resumen</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Coeficientes</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">P.valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Intercepto</td>
+<td style="text-align: center; width: 10em;">0.659</td>
+<td style="text-align: center; width: 10em;">0.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Alcohol</td>
+<td style="text-align: center; width: 10em;">0.400</td>
+<td style="text-align: center; width: 10em;">0.144</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Bioquímicas</td>
+<td style="text-align: center; width: 10em;">0.702</td>
+<td style="text-align: center; width: 10em;">0.009</td>
+</tr>
+</tbody><tfoot>
+<tr class="even">
+<td style="text-align: center; padding: 0;"><span style="font-style: italic;">Note: </span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; padding: 0;"><sup></sup> Variable predictora: Diabétes y un R^2:0,024</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
+</table>
+
+
+</div>
+</div>
+<p>A partir del modelo final, las variables que explican de manera significativa la probabilidad de tener diabetes son en primer lugar, la presencia de alteraciones em lípido y glicemia y el consumo de alcohol.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-paper lightable-hover table table-sm table-striped small" data-quarto-postprocess="true">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="4" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px; position: sticky; top: 0; background-color: #FFFFFF;"><div style="TRUE">
+Tabla 9:Bondad de ajuste para calcular la precisión del modelo Final al predecir la Diabétes
+</div></th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Devianza Nula</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Devianza Residual</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">Chi-Cuadrado</th>
+<th data-quarto-table-cell-role="th" style="text-align: right; position: sticky; top: 0; background-color: #FFFFFF;">P-valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">374.987</td>
+<td style="text-align: right; width: 5em;">366.11</td>
+<td style="text-align: right; width: 5em;">8.87</td>
+<td style="text-align: right; width: 5em;">0.01184</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>La bondad de ajuste para el modelo final revela con un P-valor de 0.0118, que el modelo es significativo para predecir la probabilidad de tener Diabetes.Luego de que se sabe que el modelo es significativo para predecir es importante calcular el aporte de cada variable predictora <em>(Test de waldS)</em>para conocer su significancia a la hora de predecir el modelo.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-paper table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Tabla 10. Test de Walds y VIF para el Modelo Final</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Variables.</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Chi_Cuadrado.</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">P_Valor.</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">VIF.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Alcohol</td>
+<td style="text-align: center; width: 10em;">2.1</td>
+<td style="text-align: center; width: 10em;">0.1400</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Bioquimicas</td>
+<td style="text-align: center; width: 10em;">6.9</td>
+<td style="text-align: center; width: 10em;">0.0088</td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td style="text-align: center; padding: 0;"><span style="font-style: italic;">Note: </span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center; padding: 0;"><sup></sup> VIF: Tolerancia en las matrices de correlación</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
+</table>
+
+
+</div>
+</div>
+<p>Como se puede notar en la tabla anterior, el supuesto de multicolinealidad no se viola, conociendo el resultado de los VIF, menores a 10 indican que ni el consumo de alcohol depende las alteraciones en lipidos y glicemia y viceversa, siendo asi se dice que el modelo no esta sesgado. Por otro lado acerca de la prueba de Test de Wald la cual mostró la significancia o el aporte de cada covariable del modelo final; Con esta prueba se corroboró el resultado del primer modelo en donde la covariables que influye en la predicción de la diabetes es la alteración en lípidos y glicemia con P-valor de 0,0088; Sabiendo que la variable que aporta significativamente al modelo final son alteraciones en lípidos y glicemia. Por medio de los Odds, el indicador para predecir la probabilidad de tener diabétes teniendo en cuenta el coeficiente de la variable predictora (Bioquimicas) como 2,016 es mayor que 1 se dice que al aumentar en una unidad las alteraciones en lípidos y glicemia, la probabilidad de tener diabetes se duplica frente a la probabilidad de no tener diabétes, esto se corrobora en el intervalo de confianza de la covariable Bioquimicas ya que no incluye al uno dentro de su intervalo, tal como lo muestra la tabla 11.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-paper table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Tabla 11. Resultados de OR e Intervalos de confianza AL 95% del Modelo Final</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">Betas.</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">OR</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">IC.Inferior</th>
+<th data-quarto-table-cell-role="th" style="text-align: center; position: sticky; top: 0; background-color: #FFFFFF;">IC.Superior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Intercepto</td>
+<td style="text-align: center; width: 10em;">1.932</td>
+<td style="text-align: center; width: 10em;">0.296</td>
+<td style="text-align: center;">1.032</td>
+</tr>
+<tr class="even">
+<td style="text-align: center; font-weight: bold;">Alcohol</td>
+<td style="text-align: center; width: 10em;">1.491</td>
+<td style="text-align: center; width: 10em;">-0.127</td>
+<td style="text-align: center;">0.946</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; font-weight: bold;">Bioquimicas</td>
+<td style="text-align: center; width: 10em;">2.016</td>
+<td style="text-align: center; width: 10em;">0.185</td>
+<td style="text-align: center;">1.237</td>
+</tr>
+</tbody><tfoot>
+<tr class="even">
+<td style="text-align: center; padding: 0;"><span style="font-style: italic;">Note: </span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center; padding: 0;"><sup></sup> Variable predictora: Diabétes</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
+</table>
+
+
+</div>
+</div>
+</section>
+
+</div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
